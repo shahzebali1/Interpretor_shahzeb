@@ -1,2 +1,2 @@
-# Interpretor_shahzeb
-an interpretor in python
+# bank-accounts_shahzeb
+code in c++ to simulate bank accounts. you can create an account and withdraw/deposit etc...
