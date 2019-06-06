@@ -1,0 +1,345 @@
+/*Program bank accounts
+  Shahzeb Ali
+CISC 1110-TR2*/
+#include <iostream>
+#include <math.h>
+#include <cmath>
+#include <fstream>
+using namespace std;
+int const Month=12;
+/*Prototypes */
+
+int read_accts(int acctnum_array[], double balance_array[], int max_accts);
+//read the files
+
+int findacct(int acctnum_array[], int num_accts, int account);
+//print the file
+
+void menu();
+void withdrawal(int acctnum_array[], double balance_array[], int num_accts, ofstream&);
+void deposit(int acctnum_array[], double balance_array[], int num_accts, ofstream&);
+int new_acct(int acctnum_array[], double balance_array[], int num_accts, ofstream&);
+void balance(int acchtnum_array[], double balance_array[], int num_accts, ofstream&);
+void print_accts(int acctnum_array[], double balance_array[], int num_accts, ofstream& );
+void delete_acct(int acctnum_array[], double balance_array[], int num_accts);
+
+int main()
+{
+
+    cout<<Month;
+    const int max_NUM=50;   //Max number of accounts there can ever exists
+    cout.precision(2);
+
+    char choice;
+    int acct_array[max_NUM];
+    double balance_array[max_NUM];
+    int num_accts;
+
+    ifstream infile("c:\\computer class\\input000.txt");  // input file
+    ofstream outfile("c:\\computer class\\output.txt");     // output file
+    cout.setf(ios::fixed,ios::floatfield);
+
+    num_accts=read_accts(acct_array, balance_array, max_NUM);
+    //read accounts from file and retrn total number of accounts
+
+    print_accts(acct_array, balance_array, num_accts,outfile);
+    //print accounts returned by read_accts() and display on screen
+
+    outfile<<"Number of accounts processed= "<< num_accts <<endl<<endl; // Displays how many accounts have been processed
+
+    do {
+             menu();       // call menu to prompt user for operation to perform
+             cin>>choice;
+            switch (choice)
+            {
+                    case'q':    //In case q or Q the program return 0 to terminate processing
+                    case'Q':
+                        cout<<endl<<endl<<endl<<endl;
+                        print_accts(acct_array, balance_array, num_accts,outfile);
+                        //ALL changes have been made to accounts so we reprint them to confirm
+
+                        return(0);
+                    case 'd':   //each case calls an appropriate function
+                    case 'D':
+                        deposit(acct_array, balance_array, num_accts, outfile);
+                    break;
+
+                    case 'W'://use both uppercase and lowercase because user might have a preference
+                    case 'w':
+                        withdrawal(acct_array, balance_array, num_accts, outfile);
+                    break;
+
+                    case 'n':
+                    case 'N':
+                        num_accts = new_acct(acct_array, balance_array, num_accts, outfile);
+                    break;
+
+                    case 'b':
+                    case 'B':
+                        balance(acct_array, balance_array, num_accts, outfile);
+                    break;
+            }
+        } while (choice != 'Q' or choice != 'q');
+    return 0;
+}
+/* Function Menu()
+ * Input-
+ *  Choice of operation
+ * process-
+ *  choose operation and then call function needed to process it
+ * Output-
+ *
+ */
+ void menu()
+{
+char choice;
+cout << "Select From the menu below:" << endl;
+cout << "W-Withdrawal" << endl;
+cout << "D-Deposit" << endl;
+cout << "N-New Account" << endl;
+cout << "B-Balance" << endl;
+cout << "Q-Quit" << endl;
+cout << "X-Delete Account" << endl;
+}
+/* Function read_accts
+ *Input-
+ *  File with balances and account numbers
+ *Process-
+ *  Match account with balance
+ *Output-
+ *  Hold values of balances and accounts
+ */
+int read_accts(int acctnum_array[], double balance_array[], int max_accts)
+{
+    ifstream infile("c:\\computer class\\input1.txt");  // input file for account names and balances
+    cout.setf(ios::fixed,ios::floatfield);
+
+    int num_accts=0;
+    int number1;
+    double number2;
+
+    while (!infile.eof())
+    {                 //use eof to read from file until end of file
+        infile>>number1>>number2;           //first number will fill indices of account array while second of balance
+        acctnum_array[num_accts]= number1;
+        balance_array[num_accts] = number2;
+        num_accts++;                        //incrementation of total accounts
+    }
+    infile.close();                         //close infile
+    num_accts--;                            // Must detriment num_accts because for loop adds one value extra
+    return num_accts;                       // returning value of total accounts
+}
+/* Function print_accts()
+ * Input-
+ *  Choice of operation
+ * process-
+ *  choose operation and then call function needed to process it
+ * Output-
+ *
+ */
+void print_accts(int acctnum_array[], double balance_array[], int num_accts, ofstream& outfile)
+{
+    cout<<"\tThe bank accounts with balances are displayed below"<<endl<<endl;
+    for (int s=0; s<num_accts; s++) //Use for loop to increment int so each indecis will match in both arrays
+    {
+        outfile<<"Account #: "<<acctnum_array[s]<<"\t\t";
+        outfile<<"Balance: "<<balance_array[s]<<endl;
+    }
+}
+/* Function findaccts()
+ * Input-
+ *  account number
+ * process-
+ *  match input with account numbers
+ * Output-
+ *  Display account number and balance
+ */
+int findacct(int acctnum_array[], int num_accts, int account)
+{
+    int s;
+    bool found=false;
+    s=-1;
+    for (int exist=0; exist<num_accts; exist++)
+        {
+        if (acctnum_array[exist] == account)
+            s=exist;
+        found=true;
+        }
+    if (found)
+        return s;
+    else
+        return (-1);
+}
+/* Function withdrawal()
+ * Input-
+ *  account number
+ *  Withdrawal amount
+ * process-
+ *  call findacct to locate account if true then
+ *  withdraw money from account
+ * Output-
+ *  New balance of account and Account number
+ */
+void withdrawal(int acctnum_array[], double balance_array[], int num_accts, ofstream& outfile)
+{
+    int account,exist;
+    double old_balance;
+    double withdrawal_amount;
+    double new_balance;
+    int a=0;
+    cout<<"Enter Account number: ";
+    cin>>account;
+    exist=findacct(acctnum_array, num_accts, account);
+    if(exist==-1)
+        outfile<<"Error: account "<<account<<" is an incorrect account number"<<endl;
+
+    for(;a<num_accts;a++)
+        {
+            if (account==acctnum_array[a])
+            {
+                cout<<"How much do you want to withdraw: ";
+                cin>>withdrawal_amount;
+                cout<<endl;
+                double x=withdrawal_amount;         //x = withdrawal amount
+
+                    if (withdrawal_amount<0 or withdrawal_amount>balance_array[a])
+                    {
+                        old_balance= balance_array[a];
+                        outfile<<"Account number "<<account<<endl;
+                        outfile<<"Transaction requested: WITHDRAWAL"<<endl;
+                        outfile<<"Balance was\t"<<"$"<<old_balance<<endl;
+                        outfile<<"Withdrawal amount "<<"$"<<x<<endl;
+                        outfile<<"ERROR: Withdrawal amount exceeds current balance"<<endl<<endl;
+                    }
+                    else{
+                        old_balance= balance_array[a];
+                        new_balance =  balance_array[a]-=withdrawal_amount;
+                        outfile<<"Account number "<<account<<endl;
+                        outfile<<"Transaction requested: WITHDRAWAL"<<endl;
+                        outfile<<"Withdrawal amount "<<"$"<<x<<endl;           //print withdrawal amount
+                        outfile<<"Balance was\t"<<old_balance<<endl;
+                        outfile<<"New balance\t"<<new_balance<<endl<<endl;
+                        }
+            }
+
+        }
+}
+/* Function deposit()
+ * Input-
+ *  account number
+ *  Deposit amount
+ * process-
+ *  call findacct to see if account exists. If true then
+ *  then add deposit amount to account
+ * Output-
+ *  Balance is increased to new balance
+ */
+void deposit(int acctnum_array[], double balance_array[], int num_accts,  ofstream& outfile)
+{
+    int account,exist;
+    double old_balance;
+    double deposit;
+    double new_balance;
+    int s=0;
+    cout<<"Enter Account number: ";
+    cin>>account;
+
+    exist=findacct(acctnum_array, num_accts, account);
+
+    if(exist==-1)   //-1 return a true value so a new account cannot be made
+
+        outfile<<"Error: account "<<account<<" is an incorrect account number"<<endl;
+
+    for(;s<num_accts;s++)
+    {
+
+        if (account==acctnum_array[s])
+        {
+            cout<<"How much do you want to deposit: ";
+            cin>>deposit;
+            cout<<endl;
+            int x=deposit;
+            if (deposit<0)
+            {
+                outfile<<"Account number "<<account<<endl;
+                outfile<<"Transaction requested: DEPOSIT"<<endl;
+                outfile<<"Deposit amount "<<"$"<<x<<endl;
+                outfile<<"Error cannot deposit negative amount"<<endl<<endl;
+            }
+            else{
+            old_balance= balance_array[s];
+            new_balance =  balance_array[s]+=deposit;
+            outfile<<"Account number "<<account<<endl;
+            outfile<<"Transaction requested: DEPOSIT"<<endl;
+            outfile<<"Deposit amount "<<"$"<<x<<endl;
+            outfile<<"Balance was\t"<<old_balance<<endl;
+            outfile<<"New balance\t"<<new_balance<<endl;
+                }
+        }
+    }
+}
+
+
+/* Function new_acct()
+ * Input-
+ *  Account number you want to create
+ * process-
+ *  call findacct() to see if account is already there.
+ *  If return is true then end otherwise create account
+ * Output-
+ *  Total number of accounts incremented and creation of new account with balance of zero
+ */
+int new_acct(int acctnum_array[], double balance_array[], int num_accts, ofstream& outfile)
+{
+    int new_acct;
+
+    cout<<"Enter new account number: "<<endl;
+    cin>>new_acct;
+    if (findacct(acctnum_array, num_accts, new_acct)>=0)
+    {
+        outfile<<"Transaction requested: New Account"<<endl;
+        outfile<<"You chose to name your account "<<new_acct<<endl;
+        outfile<<"Error account "<<new_acct<<" already exists"<<endl<<endl;
+    }
+    else
+    {
+        outfile<<"Transaction requested: New Account"<<endl;
+        outfile<<"You chose to name your account "<<new_acct<<endl;
+        outfile<<"Initial balance for your account is $0"<<endl<<endl;
+        acctnum_array[num_accts]=new_acct;
+        balance_array[num_accts]=0.00;
+        num_accts++;
+
+    }
+    return num_accts;
+}
+
+
+
+/* Function balance()
+ * Input-
+ *  Account number
+ * process-
+ *  Call findacct() to see if account exists.
+ * Output-
+ *  If exists then then display balance in account
+ */
+void balance(int acctnum_array[], double balance_array[], int num_accts, ofstream& outfile)
+{
+    int acctnum, exist;
+    cout<<"Enter Account number: "<<endl;
+    cin>>acctnum;
+    exist=findacct(acctnum_array, num_accts, acctnum);
+    if(exist==-1)
+    {
+    outfile<<"Transaction requested: Balance"<<endl;
+    outfile<<"Account number "<<acctnum<<endl;
+    outfile<<"Error: incorrect account number"<<endl<<endl;
+    }
+    else
+    {
+    outfile<<"Transaction requested: Balance"<<endl;
+    outfile<<"Account number "<<acctnum<<endl;
+    outfile<<"The balance for account "<<acctnum<<" is $"<<balance_array[exist]<<endl<<endl;
+    }
+}
